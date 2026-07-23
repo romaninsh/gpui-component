@@ -21,6 +21,19 @@ pub trait ListDelegate: Sized + 'static {
         Task::ready(())
     }
 
+    /// Called after the task returned by [`perform_search`](Self::perform_search)
+    /// resolves, with mutable access restored. Delegates backed by an
+    /// async source materialize their result view here; in-memory
+    /// delegates that filter synchronously inside `perform_search` don't
+    /// need it.
+    fn search_completed(
+        &mut self,
+        query: &str,
+        window: &mut Window,
+        cx: &mut Context<ListState<Self>>,
+    ) {
+    }
+
     /// Return the number of sections in the list, default is 1.
     ///
     /// Min value is 1.

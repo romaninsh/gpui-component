@@ -158,6 +158,15 @@ impl<D: SearchableListDelegate + 'static> ListDelegate for SearchableListAdapter
         self.delegate.perform_search(query, window, cx)
     }
 
+    fn search_completed(
+        &mut self,
+        query: &str,
+        window: &mut Window,
+        cx: &mut Context<ListState<Self>>,
+    ) {
+        self.delegate.search_completed(query, window, cx);
+    }
+
     fn set_selected_index(
         &mut self,
         ix: Option<IndexPath>,

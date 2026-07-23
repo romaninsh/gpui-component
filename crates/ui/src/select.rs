@@ -310,6 +310,17 @@ where
         });
     }
 
+    /// Run `f` with mutable access to the underlying delegate, then repaint
+    /// the list. For async-backed delegates whose data source changes outside
+    /// the search flow (e.g. a reactive store that seeds after the dropdown
+    /// was built) — lets the owner re-materialize rows in place.
+    pub fn update_delegate(&mut self, cx: &mut App, f: impl FnOnce(&mut D)) {
+        self.state.list.update(cx, |list, cx| {
+            f(&mut list.delegate_mut().delegate);
+            cx.notify();
+        });
+    }
+
     /// Get the current selected index.
     pub fn selected_index(&self, cx: &App) -> Option<IndexPath> {
         self.state.list.read(cx).selected_index()

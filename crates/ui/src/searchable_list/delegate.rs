@@ -79,6 +79,12 @@ pub trait SearchableListDelegate: Sized + 'static {
         Task::ready(())
     }
 
+    /// Called after the [`perform_search`](Self::perform_search) task
+    /// resolves, with mutable access restored. Async-backed delegates
+    /// materialize their result view here; in-memory delegates that
+    /// filter synchronously don't need it.
+    fn search_completed(&mut self, _query: &str, _window: &mut Window, _cx: &mut App) {}
+
     // MARK: Rendering hooks
 
     /// Override the row content for the item at `ix`.

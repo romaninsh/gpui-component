@@ -289,9 +289,13 @@ where
                 self._search_task = cx.spawn_in(window, async move |this, window| {
                     search.await;
 
-                    _ = this.update_in(window, |this, _, _| {
+                    _ = this.update_in(window, |this, window, cx| {
+                        // Async-backed delegates materialize their result
+                        // view here, now that the search task settled.
+                        this.delegate.search_completed(&text, window, cx);
                         this.scroll_handle.scroll_to_item(0, ScrollStrategy::Top);
                         this.last_query = Some(text);
+                        cx.notify();
                     });
 
                     // Always wait 100ms to avoid flicker
