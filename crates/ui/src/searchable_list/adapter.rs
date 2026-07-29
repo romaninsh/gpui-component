@@ -183,24 +183,4 @@ impl<D: SearchableListDelegate + 'static> ListDelegate for SearchableListAdapter
     ) -> impl IntoElement {
         (self.on_render_empty)(window, cx)
     }
-
-    // Incremental loading, forwarded to the inner delegate. `ListState` already
-    // owns the machinery (`load_more_if_need` measures the visible range
-    // against the threshold and spawns the task); the adapter only has to let
-    // a `SearchableListDelegate` answer.
-    fn has_more(&self, cx: &App) -> bool {
-        self.delegate.has_more(cx)
-    }
-
-    fn load_more_threshold(&self) -> usize {
-        self.delegate.load_more_threshold()
-    }
-
-    fn load_more(&mut self, window: &mut Window, cx: &mut Context<ListState<Self>>) {
-        self.delegate.load_more(window, cx);
-    }
-
-    fn loading(&self, cx: &App) -> bool {
-        self.delegate.loading(cx)
-    }
 }

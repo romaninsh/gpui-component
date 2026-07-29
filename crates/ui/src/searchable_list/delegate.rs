@@ -85,39 +85,6 @@ pub trait SearchableListDelegate: Sized + 'static {
     /// filter synchronously don't need it.
     fn search_completed(&mut self, _query: &str, _window: &mut Window, _cx: &mut App) {}
 
-    // MARK: Incremental loading
-    //
-    // The same three hooks [`ListDelegate`](crate::list::ListDelegate) already
-    // offers, forwarded through the adapter so a searchable list can be backed
-    // by a source it cannot hold whole. Without them a `Select` has to
-    // materialize every option before it can show the first one, which rules
-    // out any list long enough to be worth searching.
-
-    /// Whether more items exist beyond those currently counted.
-    ///
-    /// `load_more` is only dispatched while this is `true`, so a delegate that
-    /// has reached the end stops being asked.
-    fn has_more(&self, _cx: &App) -> bool {
-        false
-    }
-
-    /// How close to the end (in items) the visible range must come before
-    /// [`load_more`](Self::load_more) fires. Should be smaller than the number
-    /// of items in the first load, or it triggers immediately and forever.
-    fn load_more_threshold(&self) -> usize {
-        20
-    }
-
-    /// Fetch the next batch. Called whenever the visible range is near the end
-    /// — possibly repeatedly — so implementations must be idempotent: check
-    /// [`has_more`](Self::has_more), or hold a "loading" flag of their own.
-    fn load_more(&mut self, _window: &mut Window, _cx: &mut App) {}
-
-    /// Whether a load is in flight. Drives the list's loading affordance.
-    fn loading(&self, _cx: &App) -> bool {
-        false
-    }
-
     // MARK: Rendering hooks
 
     /// Override the row content for the item at `ix`.
