@@ -152,19 +152,26 @@ where
         &mut self.delegate
     }
 
+    /// The search query input's state entity. Public so components composing
+    /// their own dropdown over a `ListState` (outside this crate) can watch
+    /// the search input's focus alongside the list's.
+    pub fn query_input(&self) -> &Entity<InputState> {
+        &self.query_input
+    }
+
     /// Focus the list, if the list is searchable, focus the search input.
     pub fn focus(&mut self, window: &mut Window, cx: &mut App) {
         self.focus_handle(cx).focus(window, cx);
     }
 
     /// Return true if either the list or the search input is focused.
-    pub(crate) fn is_focused(&self, window: &Window, cx: &App) -> bool {
+    pub fn is_focused(&self, window: &Window, cx: &App) -> bool {
         self.focus_handle.is_focused(window) || self.query_input.focus_handle(cx).is_focused(window)
     }
 
     /// Set the selected index of the list,
     /// this will also scroll to the selected item.
-    pub(crate) fn _set_selected_index(
+    pub fn _set_selected_index(
         &mut self,
         ix: Option<IndexPath>,
         window: &mut Window,
@@ -344,7 +351,7 @@ where
         }
     }
 
-    pub(crate) fn reset_on_cancel(mut self, reset: bool) -> Self {
+    pub fn reset_on_cancel(mut self, reset: bool) -> Self {
         self.reset_on_cancel = reset;
         self
     }

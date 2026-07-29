@@ -19,7 +19,7 @@ mod virtual_list;
 mod window_border;
 mod window_ext;
 
-pub(crate) mod actions;
+pub mod actions;
 
 pub mod accordion;
 pub mod alert;
