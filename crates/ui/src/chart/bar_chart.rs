@@ -40,6 +40,8 @@ where
     grid: bool,
     alignment: BarAlignment,
     corner_radii: Corners<Pixels>,
+    /// See [`BarChart::max_value`].
+    max_value: Option<V>,
 }
 
 impl<T, B, V> BarChart<T, B, V>
@@ -62,6 +64,7 @@ where
             label_axis: true,
             grid: true,
             alignment: BarAlignment::default(),
+            max_value: None,
             corner_radii: Corners::all(px(0.)),
         }
     }
@@ -153,6 +156,14 @@ where
     ) -> Self {
         self.fill_gradient = Some(Rc::new(fill));
         self.fill = None;
+        self
+    }
+
+    /// Pin the value axis' maximum. Overlaid charts (stacked bars built
+    /// from N cumulative layers) must share one domain or every layer
+    /// normalizes to its own max and the composition lies.
+    pub fn max_value(mut self, max: V) -> Self {
+        self.max_value = Some(max);
         self
     }
 
@@ -293,6 +304,7 @@ where
                 .iter()
                 .map(|v| value_fn(v))
                 .chain(Some(V::zero()))
+                .chain(self.max_value)
                 .collect(),
             range,
         );

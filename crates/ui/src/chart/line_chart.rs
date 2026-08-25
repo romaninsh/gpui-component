@@ -31,6 +31,9 @@ where
     tick_margin: usize,
     x_axis: bool,
     grid: bool,
+    /// Pinned y-domain maximum — lets several overlaid charts share one
+    /// scale (each would otherwise normalize to its own max).
+    max_value: Option<Y>,
 }
 
 impl<T, X, Y> LineChart<T, X, Y>
@@ -52,7 +55,14 @@ where
             tick_margin: 1,
             x_axis: true,
             grid: true,
+            max_value: None,
         }
+    }
+
+    /// Pin the y-domain maximum (see the `max_value` field).
+    pub fn max_value(mut self, max_value: Y) -> Self {
+        self.max_value = Some(max_value);
+        self
     }
 
     pub fn x(mut self, x: impl Fn(&T) -> X + 'static) -> Self {
@@ -132,6 +142,7 @@ where
                 .iter()
                 .map(|v| y_fn(v))
                 .chain(Some(Y::zero()))
+                .chain(self.max_value)
                 .collect(),
             vec![height, 10.],
         );
