@@ -157,8 +157,18 @@ fn parse_paragraph(paragraph: &mut Paragraph, node: &mdast::Node, cx: &mut NodeC
             });
         }
         Node::Text(val) => {
-            text = val.value.clone();
-            paragraph.push_str(&val.value)
+            // A line ending inside a paragraph is a soft break, which
+            // CommonMark renders as a space; a hard break arrives as its
+            // own `Node::Break`. One byte for one byte, so selection
+            // offsets into the source stay aligned.
+            text = val.value.replace('\n', " ");
+            paragraph.push_str(&text)
+        }
+        // A hard break (two trailing spaces or a backslash), rendered the
+        // same way as an inline `<br>` below.
+        Node::Break(_) => {
+            text = "\n".to_owned();
+            paragraph.push(InlineNode::new(&text));
         }
         Node::Emphasis(val) => {
             text = merge_children_with_mark(
@@ -538,5 +548,31 @@ mod tests {
                 .any(|(_, mark)| mark.bold && mark.italic),
             "nested emphasis should produce a bold and italic mark"
         );
+    }
+
+    fn paragraph_text(source: &str) -> String {
+        let mut cx = NodeContext::default();
+        let document = parse(source, &mut cx, &HighlightTheme::default_light()).unwrap();
+        let BlockNode::Paragraph(paragraph) = &document.blocks[0] else {
+            panic!("expected paragraph");
+        };
+        paragraph
+            .children
+            .iter()
+            .map(|child| child.text.to_string())
+            .collect()
+    }
+
+    #[test]
+    fn test_soft_line_break_renders_as_a_space() {
+        assert_eq!(
+            paragraph_text("A line wrapped\nin the source."),
+            "A line wrapped in the source."
+        );
+    }
+
+    #[test]
+    fn test_hard_line_break_is_kept() {
+        assert!(paragraph_text("Two spaces end this  \nline.").contains('\n'));
     }
 }
