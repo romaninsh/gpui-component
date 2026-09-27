@@ -66,6 +66,8 @@ where
     padding_inner: f32,
     padding_outer: f32,
     min_length: f32,
+    /// See [`BarChart::max_value`].
+    max_value: Option<V>,
     id: ElementId,
     interactive: bool,
     name: Option<SharedString>,
@@ -112,6 +114,7 @@ where
             padding_inner: 0.4,
             padding_outer: 0.2,
             min_length: 0.,
+            max_value: None,
             id: caller_id(),
             interactive: true,
             name: None,
@@ -446,6 +449,14 @@ where
         self
     }
 
+    /// Extend the value axis to at least `max`. Overlaid charts (stacked bars
+    /// built from cumulative layers) must share one domain, or every layer
+    /// scales to its own maximum and the composition misleads.
+    pub fn max_value(mut self, max: V) -> Self {
+        self.max_value = Some(max);
+        self
+    }
+
     /// The band scale (matching `paint`): spans the height for horizontal bars, the width
     /// otherwise. Shared by `tooltip_state` and `tooltip`.
     fn band_scale(&self, bounds: Bounds<Pixels>) -> Option<ScaleBand<B>> {
@@ -523,6 +534,7 @@ where
                 .iter()
                 .map(|v| value_fn(v))
                 .chain(Some(V::zero()))
+                .chain(self.max_value)
                 .collect(),
             vec![baseline, far],
         );
@@ -630,11 +642,16 @@ where
         let Some(value_fn) = self.value.as_ref() else {
             return vec![];
         };
-        // The data plus zero, as `value_scale` spans.
-        let (lo, hi) = self.data.iter().fold((0.0_f32, 0.0_f32), |(lo, hi), v| {
-            let f = value_fn(v).to_f32().unwrap_or(0.);
-            (lo.min(f), hi.max(f))
-        });
+        // The data plus zero and `max_value`, as `value_scale` spans.
+        let (lo, hi) = self
+            .data
+            .iter()
+            .map(|v| value_fn(v))
+            .chain(self.max_value)
+            .fold((0.0_f32, 0.0_f32), |(lo, hi), v| {
+                let f = v.to_f32().unwrap_or(0.);
+                (lo.min(f), hi.max(f))
+            });
         let steps = (self.value_tick_count - 1) as f32;
         (0..self.value_tick_count)
             .map(|i| {
