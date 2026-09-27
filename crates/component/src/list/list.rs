@@ -157,6 +157,13 @@ where
         self.focus_handle(cx).focus(window, cx);
     }
 
+    /// The search query input's state entity. Public so components composing
+    /// their own dropdown over a `ListState` (outside this crate) can watch
+    /// the search input's focus alongside the list's.
+    pub fn query_input(&self) -> &Entity<InputState> {
+        &self.query_input
+    }
+
     /// Return true if either the list or the search input is focused.
     pub(crate) fn is_focused(&self, window: &Window, cx: &App) -> bool {
         self.focus_handle.is_focused(window) || self.query_input.focus_handle(cx).is_focused(window)
@@ -349,7 +356,7 @@ where
         }
     }
 
-    pub(crate) fn reset_on_cancel(mut self, reset: bool) -> Self {
+    pub fn reset_on_cancel(mut self, reset: bool) -> Self {
         self.reset_on_cancel = reset;
         self
     }
