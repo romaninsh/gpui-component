@@ -563,7 +563,7 @@ impl RenderOnce for Dialog {
         let on_cancel = self.button_props.cancel_handler();
 
         let window_paddings = crate::window_border::window_paddings(window);
-        let view_size = window.viewport_size()
+        let view_size = gpui_base::usable_viewport_size(window, cx)
             - gpui::size(
                 window_paddings.left + window_paddings.right,
                 window_paddings.top + window_paddings.bottom,

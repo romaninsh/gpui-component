@@ -483,9 +483,11 @@ struct WindowStateLayers {
 impl RenderOnce for WindowStateLayers {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let root = self.root;
+        let reserved_right = gpui_base::Root::reserved_right(window, cx);
         div()
             .absolute()
             .inset_0()
+            .right(reserved_right)
             .debug_selector(|| "root-layers".to_string())
             .children(WindowState::sheet_layer(root.clone(), window, cx))
             .children(WindowState::dialog_layer(&root, window, cx))

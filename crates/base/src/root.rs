@@ -3,8 +3,8 @@ use crate::input::Copy;
 use crate::{StyledExt, TextSelectionLayer};
 use gpui::{
     AnyElement, AnyView, App, AppContext, ClipboardItem, Context, Div, Entity, Global,
-    InteractiveElement, IntoElement, KeyBinding, ParentElement, Render, Stateful, StyleRefinement,
-    Styled, Window, actions, div,
+    InteractiveElement, IntoElement, KeyBinding, ParentElement, Pixels, Render, Size, Stateful,
+    StyleRefinement, Styled, Window, actions, div, px,
 };
 use std::{any::TypeId, rc::Rc};
 
@@ -93,9 +93,38 @@ pub struct Root {
     view: AnyView,
     style: StyleRefinement,
     plugins: Vec<Plugin>,
+    reserved_right: Pixels,
+}
+
+/// The window viewport minus the width the host reserved at its right edge.
+///
+/// Overlays that size and centre themselves from the viewport use this so they
+/// leave the reserved strip untouched.
+pub fn usable_viewport_size(window: &Window, cx: &App) -> Size<Pixels> {
+    let mut size = window.viewport_size();
+    size.width = (size.width - Root::reserved_right(window, cx)).max(px(0.));
+    size
 }
 
 impl Root {
+    /// Width reserved at the window's right edge, zero when unset or without a Base root.
+    pub fn reserved_right(window: &Window, cx: &App) -> Pixels {
+        window
+            .root::<Self>()
+            .flatten()
+            .map_or(px(0.), |root| root.read(cx).reserved_right)
+    }
+
+    /// Sets the reserved right width; the root re-renders only when it changed.
+    pub fn set_reserved_right(width: Pixels, window: &mut Window, cx: &mut App) {
+        Self::update(window, cx, |root, _, cx| {
+            if root.reserved_right != width {
+                root.reserved_right = width;
+                cx.notify();
+            }
+        });
+    }
+
     /// Register a presentation plugin once per application. Re-registering its
     /// type replaces the factory for future windows rather than mounting it twice.
     pub fn register_plugin<V: RootPlugin>(
@@ -158,6 +187,7 @@ impl Root {
                 .into_iter()
                 .map(|(_, build)| build(window, cx))
                 .collect(),
+            reserved_right: px(0.),
         }
     }
 

@@ -516,7 +516,7 @@ impl ParentElement for Dialog {
 }
 
 impl RenderOnce for Dialog {
-    fn render(self, window: &mut Window, _: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let open = self
             .handle
             .as_ref()
@@ -536,7 +536,7 @@ impl RenderOnce for Dialog {
         let escape_change = self.on_open_change.clone();
         let confirm_change = self.on_open_change.clone();
         let backdrop_change = self.on_open_change.clone();
-        let viewport = window.viewport_size();
+        let viewport = crate::usable_viewport_size(window, cx);
 
         deferred(
             anchored().position(point(px(0.), px(0.))).child(

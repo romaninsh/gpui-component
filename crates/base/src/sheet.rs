@@ -113,8 +113,8 @@ impl Styled for Sheet {
 }
 
 impl RenderOnce for Sheet {
-    fn render(self, window: &mut Window, _: &mut App) -> impl IntoElement {
-        let viewport = window.viewport_size();
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let viewport = crate::usable_viewport_size(window, cx);
         let request_close = self.request_close;
         let on_close = self.on_close;
         let escape_request = request_close.clone();

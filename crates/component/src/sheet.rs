@@ -136,7 +136,7 @@ impl RenderOnce for Sheet {
         let placement = self.placement;
         let selection_scope = self.selection_scope;
         let frame_insets = crate::window_border::window_content_insets(window);
-        let size = window.viewport_size()
+        let size = gpui_base::usable_viewport_size(window, cx)
             - gpui::size(
                 frame_insets.left + frame_insets.right,
                 frame_insets.top + frame_insets.bottom,

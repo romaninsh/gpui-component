@@ -6,7 +6,7 @@ use crate::{
     notification::Notification,
     sheet::Sheet,
 };
-use gpui::{App, ElementId, Entity, Window};
+use gpui::{App, ElementId, Entity, Pixels, Window};
 use std::rc::Rc;
 
 /// Extension trait for [`Window`] to add dialog, sheet .. functionality.
@@ -87,6 +87,12 @@ pub trait WindowExt: Sized {
     fn focused_input(&mut self, cx: &mut App) -> Option<AnyInputState>;
     /// Returns true if there is a focused Input entity.
     fn has_focused_input(&mut self, cx: &mut App) -> bool;
+
+    /// Reserves `width` at the window's right edge; sheets, dialogs and notifications stop short of it.
+    fn set_reserved_right(&mut self, width: Pixels, cx: &mut App);
+
+    /// Returns the width reserved at the window's right edge, zero when none is set.
+    fn reserved_right(&self, cx: &App) -> Pixels;
 }
 
 impl WindowExt for Window {
@@ -223,5 +229,17 @@ impl WindowExt for Window {
             }
         });
         None
+    }
+
+    fn set_reserved_right(&mut self, width: Pixels, cx: &mut App) {
+        if gpui_base::Root::reserved_right(self, cx) == width {
+            return;
+        }
+        gpui_base::Root::set_reserved_right(width, self, cx);
+        WindowState::update(self, cx, |_, _, cx| cx.notify());
+    }
+
+    fn reserved_right(&self, cx: &App) -> Pixels {
+        gpui_base::Root::reserved_right(self, cx)
     }
 }
